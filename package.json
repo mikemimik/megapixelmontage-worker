@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/mikemimik/megapixelmontage-worker/issues"
   },
-  "homepage": "https://github.com/mikemimik/megapixelmontage-worker#readme"
+  "homepage": "https://github.com/mikemimik/megapixelmontage-worker#readme",
+  "dependencies": {
+    "cron": "4.3.1"
+  }
 }
