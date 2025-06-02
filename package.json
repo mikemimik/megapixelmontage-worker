@@ -1,0 +1,29 @@
+{
+  "name": "megapixelmontage-worker",
+  "version": "1.0.0",
+  "description": "Photography Website - Background Worker",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10.9.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikemimik/megapixelmontage-worker.git"
+  },
+  "keywords": [
+    "website",
+    "worker",
+    "digitalocean"
+  ],
+  "author": "Michael Perrotte",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mikemimik/megapixelmontage-worker/issues"
+  },
+  "homepage": "https://github.com/mikemimik/megapixelmontage-worker#readme"
+}
