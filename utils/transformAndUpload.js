@@ -13,14 +13,22 @@ function handleStreamError(stream) {
 }
 
 /**
- * @param {Object} imageObject
- * @param {string} imageObject.ContentType
- * @param {string} imageObject.Key - Unique identifier of object
- * @param {Object.<string, string>} imageObject.Metadata
- * @param {Readable} imageObject.readableStream
+ * @typedef {object} ImageObject
+ * @property {string} ContentType
+ * @property {Object.<string, string>} Metadata
+ * @property {string} Key - Unique identifier of object
+ * @property {Readable} readableStream
  */
-export default async function transformAndUpload(imageObject) {
+
+/**
+ * @param {ImageObject} imageObject
+ * @param {object} options
+ * @param {S3}     options.client - S3 client instance
+ * @param {string} options.bucket - Name of the bucket
+ */
+export default async function transformAndUpload(imageObject, options) {
   const { readableStream, ContentType, Metadata, Key } = imageObject;
+  const { client, bucket } = options;
 
   const transformer = sharp().jpeg({ mozjpeg: true });
   const passThroughStream = new PassThrough();
@@ -34,9 +42,9 @@ export default async function transformAndUpload(imageObject) {
   const minifiedKey = `${filename}-min.${extension}`;
 
   const upload = new Upload({
-    client: s3Client,
+    client,
     params: {
-      Bucket: DO_SPACE_BUCKET,
+      Bucket: bucket,
       Key: minifiedKey,
       Body: passThroughStream,
       ContentType,
