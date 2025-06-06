@@ -2,6 +2,8 @@ import { Readable, PassThrough } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
 import sharp from "sharp";
 
+import { getLogger } from "./logger.js";
+
 /**
  * @param {Readable} stream
  */
@@ -29,6 +31,9 @@ function handleStreamError(stream) {
 export default async function transformAndUpload(imageObject, options) {
   const { readableStream, ContentType, Metadata, Key } = imageObject;
   const { client, bucket } = options;
+  const logger = getLogger("transformAndUpload");
+
+  logger.trace({ imageObject, options }, "transformAndUpload:params");
 
   const transformer = sharp().jpeg({ mozjpeg: true });
   const passThroughStream = new PassThrough();
@@ -40,6 +45,8 @@ export default async function transformAndUpload(imageObject, options) {
 
   const [filename, extension] = Key.split(".");
   const minifiedKey = `${filename}-min.${extension}`;
+
+  logger.info({ minifiedKey }, "transforming and uploading image");
 
   const upload = new Upload({
     client,
@@ -57,7 +64,7 @@ export default async function transformAndUpload(imageObject, options) {
   });
 
   upload.on("httpUploadProgress", (progress) => {
-    console.log(`Upload progress: ${progress.loaded}/${progress.total || "?"}`);
+    logger.info({ progress }, "upload progress");
   });
 
   return upload.done();
