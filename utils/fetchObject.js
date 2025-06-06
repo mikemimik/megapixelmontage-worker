@@ -1,4 +1,5 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "node:stream";
 
 /**
  * @typedef ObjectData
