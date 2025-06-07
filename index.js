@@ -84,7 +84,7 @@ const job = CronJob.from({
   onTick: handler,
   onComplete: (data) => {
     const logger = getLogger("onComplete");
-    logger.info({ ...data }, "processed information");
+    logger.info({ data }, "processed information");
   },
   errorHandler: (err) => {
     const logger = getLogger("errorHandler");
