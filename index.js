@@ -74,9 +74,13 @@ async function handler(done) {
 
 logger.info("job creating");
 
+const MINUTELY_CRON = "*/1 * * * *";
+const HOURLY_CRON = "0 */1 * * *";
+const EVERY_4TH_HOUR_CRON = "0 */4 */1 * *";
+
 const job = CronJob.from({
   name: "minify-images",
-  cronTime: "0 */4 */1 * *",
+  cronTime: HOURLY_CRON,
   onTick: handler,
   onComplete: (data) => {
     const logger = getLogger("onComplete");
@@ -108,6 +112,7 @@ logger.info(
     job: {
       isActive: job.isActive,
       isCallbackRunning: job.isCallbackRunning,
+      next: job.nextDates(4),
     },
   },
   "job started",
