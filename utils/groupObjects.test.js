@@ -5,8 +5,15 @@ import groupObjects from "./groupObjects.js";
 
 test("groupObjects", async (t) => {
   await t.test("default return", async (t) => {
+    const expectedResult = {
+      minified: [],
+      small: [],
+      medium: [],
+      large: [],
+      images: [],
+    };
     const actualResult = groupObjects([]);
-    assert.deepEqual(actualResult, { minified: [], images: [] });
+    assert.deepEqual(actualResult, expectedResult);
   });
 
   await t.test("should remove '-min' from key", async (t) => {
@@ -22,6 +29,9 @@ test("groupObjects", async (t) => {
           Key: "first.jpg",
         },
       ],
+      small: [],
+      medium: [],
+      large: [],
       images: [],
     };
 
@@ -48,6 +58,9 @@ test("groupObjects", async (t) => {
           Key: "first.jpg",
         },
       ],
+      small: [],
+      medium: [],
+      large: [],
       images: [
         {
           Key: "first.jpg",
