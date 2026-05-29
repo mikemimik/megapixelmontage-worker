@@ -7,7 +7,7 @@ export function getLogger(functionName) {
     return logger.child({ function: functionName });
   }
 
-  logger = createLogger();
+  logger = createLogger({});
 
   return logger.child({ function: functionName });
 }
