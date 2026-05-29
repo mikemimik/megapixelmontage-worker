@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "node index.js | pino-pretty",
-    "test": "node --test --import mock-import/register"
+    "test": "LOG_LEVEL=silent node --test --import mock-import/register"
   },
   "repository": {
     "type": "git",
