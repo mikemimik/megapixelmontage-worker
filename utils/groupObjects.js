@@ -1,28 +1,40 @@
 /**
  * @typedef {object} GroupedObjects
  * @property {ObjectItem[]} minified
+ * @property {ObjectItem[]} small
+ * @property {ObjectItem[]} medium
+ * @property {ObjectItem[]} large
  * @property {ObjectItem[]} images
  */
+
+const GROUPS = {
+  minified: "-min",
+  small: "-sm",
+  medium: "-md",
+  large: "-lg",
+};
 
 /**
  * @param {OjectItem[]} items
  * @returns {GroupedObjects}
  */
 export default function groupObjects(items) {
-  const { minified, images } = items.reduce(
+  return items.reduce(
     (acc, item) => {
-      const isMinified = item.Key.indexOf("-min") !== -1;
-      if (isMinified) {
-        //INFO: minified image
-        const Key = item.Key.replace("-min", "");
-        acc.minified.push({ Key });
+      const grouping = Object.entries(GROUPS).find(
+        ([_group, slug]) => item.Key.indexOf(slug) !== -1,
+      );
+
+      if (grouping) {
+        const [group, slug] = grouping;
+        const Key = item.Key.replace(slug, "");
+        acc[group].push({ Key });
       } else {
         acc.images.push(item);
       }
+
       return acc;
     },
-    { minified: [], images: [] },
+    { minified: [], small: [], medium: [], large: [], images: [] },
   );
-
-  return { minified, images };
 }

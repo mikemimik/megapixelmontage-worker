@@ -7,9 +7,12 @@ import createClient from "./utils/createClient.js";
 import fetchBucketObjects from "./utils/fetchBucketObjects.js";
 import fetchObject from "./utils/fetchObject.js";
 import groupObjects from "./utils/groupObjects.js";
+import groupDifferences from "./utils/groupDifferences.js";
 import transformAndUpload from "./utils/transformAndUpload.js";
 
 import { createLogger, getLogger } from "./utils/logger.js";
+
+import transformationTasks from "./tasks/index.js";
 
 const { differenceBy } = lodash;
 
@@ -23,6 +26,11 @@ const {
 } = process.env;
 
 const logger = createLogger({ level: LOG_LEVEL });
+
+/**
+ * @typedef {import('sharp').Sharp} Sharp
+ * @typedef {function(Sharp): Readable} TransformerFunction
+ */
 
 async function handler(done) {
   try {
@@ -43,22 +51,52 @@ async function handler(done) {
     });
     logger.trace({ items }, "fetchBucketObjects:result");
 
-    const { minified, images } = groupObjects(items);
-    logger.trace({ minified, images }, "groupObjects:result");
+    const { minified, small, medium, large, images } = groupObjects(items);
+    logger.trace(
+      { minified, small, medium, large, images },
+      "groupObjects:result",
+    );
 
     const unminified = differenceBy(images, minified, "Key");
-    logger.debug({ unminified }, "differenceBy:result");
+    const unsmall = differenceBy(images, small, "Key");
+    const unmedium = differenceBy(images, medium, "Key");
+    const unlarge = differenceBy(images, large, "Key");
 
-    for (const image of unminified) {
-      const imageObject = await fetchObject(image.Key, {
+    logger.debug(
+      { unminified, unsmall, unmedium, unlarge },
+      "differenceBy:result",
+    );
+
+    const groupedDifferences = groupDifferences(images, {
+      unminified,
+      unsmall,
+      unmedium,
+      unlarge,
+    });
+
+    logger.debug({ groupedDifferences }, "groupDifferences:result");
+
+    for (const [imageKey, tasks] of Object.entries(groupedDifferences)) {
+      if (tasks.length === 0) continue;
+
+      const imageObject = await fetchObject(imageKey, {
         client: s3Client,
         bucket: DO_SPACE_BUCKET,
       });
+
+      logger.info({ imageKey, tasks }, "processing image");
+
+      const transformers = Object.fromEntries(
+        tasks.map((slug) => [slug, transformationTasks[slug]]),
+      );
+
       await transformAndUpload(imageObject, {
         client: s3Client,
         bucket: DO_SPACE_BUCKET,
+        transformers,
       });
     }
+
     logger.info("processing completed");
     done({
       listedImages: items.length,
@@ -78,18 +116,24 @@ const MINUTELY_CRON = "*/1 * * * *";
 const HOURLY_CRON = "0 */1 * * *";
 const EVERY_4TH_HOUR_CRON = "0 */4 */1 * *";
 
+const onComplete = (data) => {
+  const logger = getLogger("onComplete");
+  logger.info({ data }, "processed information");
+};
+
+const errorHandler = (err) => {
+  const logger = getLogger("errorHandler");
+  logger.error({ err }, "error occurred");
+};
+
+// handler(onComplete);
+
 const job = CronJob.from({
   name: "minify-images",
   cronTime: HOURLY_CRON,
   onTick: handler,
-  onComplete: (data) => {
-    const logger = getLogger("onComplete");
-    logger.info({ data }, "processed information");
-  },
-  errorHandler: (err) => {
-    const logger = getLogger("errorHandler");
-    logger.error({ err }, "error occurred");
-  },
+  onComplete,
+  errorHandler,
   start: false,
   waitForCompletion: true,
   timeZone: "UTC",

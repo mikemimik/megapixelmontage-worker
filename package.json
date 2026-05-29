@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "node index.js | pino-pretty",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "LOG_LEVEL=silent node --test --import mock-import/register"
   },
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "sharp": "0.34.2"
   },
   "devDependencies": {
+    "mock-import": "4.2.1",
     "pino-pretty": "13.0.0"
   }
 }
