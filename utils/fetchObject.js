@@ -22,7 +22,7 @@ export default async function fetchObject(key, options) {
   const { client, bucket } = options;
   const logger = getLogger("fetchObject");
 
-  logger.trace({ key, options }, "fetchObject:params");
+  logger.trace({ key, bucket, client: typeof client }, "fetchObject:params");
 
   const command = new GetObjectCommand({
     Bucket: bucket,
